@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "gif.js": "^0.2.0",
-    "html2canvas": "^1.4.1"
+    "html2canvas": "^1.4.1",
+    "http-server": "^14.1.1"
   }
 }
