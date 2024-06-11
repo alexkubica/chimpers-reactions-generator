@@ -64,7 +64,8 @@
         function displayGif() {
             const gifNumber = document.getElementById('gifNumber').value;
             const gifUrl = `https://r3bel-gifs-prod.s3.us-east-2.amazonaws.com/chimpers-main-portrait/${gifNumber}.gif`;
-            document.getElementById('gif').src = gifUrl;
+            const gifImage = document.getElementById('gif');
+            gifImage.src = gifUrl;
         }
 
         function displayOverlay() {
