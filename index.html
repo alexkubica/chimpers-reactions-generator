@@ -27,7 +27,9 @@
         #overlayContainer img {
             height: 200px;
         }
-
+        canvas{
+            visibility: hidden;
+        }
     </style>
 </head>
 
@@ -43,7 +45,9 @@
     </div>
 
     <div id="gifContainer">
-        <img id="gif" src="" alt="GIF will be displayed here">
+        <div id="myGifContainer">
+            <img id="gif" src="" alt="GIF will be displayed here">
+        </div>
         <div id="overlayContainer"></div>
     </div>
 
@@ -62,10 +66,18 @@
 
     <script>
         function displayGif() {
+            const myGifContainer = document.getElementById("myGifContainer");
             const gifNumber = document.getElementById('gifNumber').value;
             const gifUrl = `https://r3bel-gifs-prod.s3.us-east-2.amazonaws.com/chimpers-main-portrait/${gifNumber}.gif`;
-            document.getElementById('gif').src = gifUrl;
+            
+             // document.getElementById('gif').src = gifUrl;
+            // the issue with the abpve code is that because you are trying to acess a resource that is not on the same domain as the one you are on, the browser will block it. but you can use a proxy to get around this issue. I couldn't found a suitable one
+            // another way to go around it https://medium.com/charisol-community/downloading-resources-in-html5-a-download-may-not-work-as-expected-bf63546e2baa
+
+            // but using a staic data works for now
+            myGifContainer.innerHTML =`<img id="gif" src="./gifApe.gif"" alt="GIF will be displayed here">`;
         }
+        
 
         function displayOverlay() {
             const overlayNumber = document.getElementById('overlayNumber').value;
@@ -74,7 +86,7 @@
         }
 
         async function downloadGif() {
-            const container = document.getElementById('gif');
+            const container = document.getElementById('gifContainer');
 
             // Ensure the GIF image is fully loaded before capturing
             const gifImage = document.getElementById('gif');
@@ -83,8 +95,7 @@
             }
 
             html2canvas(container).then(async canvas => {
-
-                    document.body.appendChild(canvas)
+                document.body.appendChild(canvas)
 
 
                 const workerBlob = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js')
@@ -100,7 +111,6 @@
                     width: container.clientWidth,
                     height: container.clientHeight
                 });
-
 
 
                 gif.addFrame(canvas, { delay: 200 });
