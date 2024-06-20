@@ -1,125 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Chimpers Reactions Generator</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				text-align: center;
+				padding: 20px;
+			}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chimpers Reactions Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
+			#gifContainer {
+				position: relative;
+				display: inline-block;
+			}
 
-        #gifContainer {
-            position: relative;
-            display: inline-block;
-        }
+			#overlayContainer {
+				position: absolute;
+				top: 0;
+				left: 300px;
+				pointer-events: none;
+			}
 
-        #overlayContainer {
-            position: absolute;
-            top: 0;
-            left: 300px;
-            pointer-events: none;
-        }
+			#overlayContainer img {
+				height: 200px;
+			}
+		</style>
+	</head>
 
-        #overlayContainer img {
-            height: 200px;
-        }
+	<body>
+		<h1>Chimpers Reactions Generator</h1>
 
-    </style>
-</head>
+		<div>
+			<h2>Select Chimper</h2>
+			<label for="gifNumber">Chimper #(1-5555): </label>
+			<input type="number" id="gifNumber" min="1" max="5555" value="2956" />
+			<button onclick="displayGif()">Refresh GIF</button>
+		</div>
 
-<body>
+		<div id="gifContainer">
+			<img id="gif" src="" alt="GIF will be displayed here" />
+			<div id="overlayContainer"></div>
+		</div>
 
-    <h1>Chimpers Reactions Generator</h1>
+		<h2>Select reaction (1-22)</h2>
+		<label for="overlayNumber">Reaction Number: </label>
+		<input type="number" id="overlayNumber" min="1" max="22" value="1" />
+		<button onclick="displayOverlay()">Refresh Reaction</button>
 
-    <div>
-        <h2>Select Chimper</h2>
-        <label for="gifNumber">Chimper #(1-5555): </label>
-        <input type="number" id="gifNumber" min="1" max="5555" value="2956">
-        <button onclick="displayGif()">Refresh GIF</button>
-    </div>
+		<h2>Download Result</h2>
+		<div>
+			<button onclick="downloadGif()">Download as GIF</button>
+		</div>
 
-    <div id="gifContainer">
-        <img id="gif" src="" alt="GIF will be displayed here">
-        <div id="overlayContainer"></div>
-    </div>
+		<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
 
-    <h2>Select reaction (1-22)</h2>
-    <label for="overlayNumber">Reaction Number: </label>
-    <input type="number" id="overlayNumber" min="1" max="22" value="1">
-    <button onclick="displayOverlay()">Refresh Reaction</button>
+		<script>
+			function displayGif() {
+				const gifNumber = document.getElementById("gifNumber").value;
+				const gifUrl = `https://r3bel-gifs-prod.s3.us-east-2.amazonaws.com/chimpers-main-portrait/${gifNumber}.gif`;
+				document.getElementById("gif").src = gifUrl;
+			}
 
-    <h2>Download Result</h2>
-    <div>
-        <button onclick="downloadGif()">Download as GIF</button>
-    </div>
+			function displayOverlay() {
+				const overlayNumber = document.getElementById("overlayNumber").value;
+				const overlayContainer = document.getElementById("overlayContainer");
+				overlayContainer.innerHTML = `<img src="/${overlayNumber}.png" />`;
+			}
 
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
+			async function downloadGif() {
+				const gifNumber = document.getElementById("gifNumber").value;
+				const gifUrl = `https://r3bel-gifs-prod.s3.us-east-2.amazonaws.com/chimpers-main-portrait/${gifNumber}.gif`;
 
-    <script>
-        function displayGif() {
-            const gifNumber = document.getElementById('gifNumber').value;
-            const gifUrl = `https://r3bel-gifs-prod.s3.us-east-2.amazonaws.com/chimpers-main-portrait/${gifNumber}.gif`;
-            document.getElementById('gif').src = gifUrl;
-        }
+				const headers = {
+					Authorization:
+						"AWS " + YOUR_AWS_ACCESS_KEY_ID + ":" + YOUR_AWS_SECRET_ACCESS_KEY,
+					"Content-Type": "image/gif",
+				};
 
-        function displayOverlay() {
-            const overlayNumber = document.getElementById('overlayNumber').value;
-            const overlayContainer = document.getElementById('overlayContainer');
-            overlayContainer.innerHTML = `<img src="/${overlayNumber}.png" />`;
-        }
+				const response = await fetch(gifUrl, {
+					mode: "no-cors",
+					headers: headers,
+				});
 
-        async function downloadGif() {
-            const container = document.getElementById('gif');
+				const blob = await response.blob();
 
-            // Ensure the GIF image is fully loaded before capturing
-            const gifImage = document.getElementById('gif');
-            if (!gifImage.complete) {
-                await new Promise(resolve => gifImage.onload = resolve);
-            }
+				const url = URL.createObjectURL(blob);
 
-            html2canvas(container).then(async canvas => {
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `chimpers_reaction_${gifNumber}`;
+				a.click();
 
-                    document.body.appendChild(canvas)
+				URL.revokeObjectURL(url);
+			}
 
-
-                const workerBlob = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js')
-                    .then(response => {
-                        if (!response.ok) throw new Error("Network response was not OK");
-                        return response.blob();
-                    });
-
-                const gif = new GIF({
-                    workers: 4,
-                    workerScript: URL.createObjectURL(workerBlob),
-                    quality: 10,
-                    width: container.clientWidth,
-                    height: container.clientHeight
-                });
-
-
-
-                gif.addFrame(canvas, { delay: 200 });
-
-                gif.on('finished', function (blob) {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = 'image.gif';
-                    link.click();
-                });
-
-                gif.render();
-            });
-        }
-
-        displayGif();
-        displayOverlay();
-    </script>
-
-</body>
-
+			displayGif();
+			displayOverlay();
+		</script>
+	</body>
 </html>
